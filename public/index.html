@@ -1,0 +1,50 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Socket.IO chat</title>
+    <link rel="stylesheet" type="text/css" href="/styles.css">
+  </head>
+  <body>
+    <script>
+      var username = window.prompt();
+      if(username === null || username === ""){
+        username = "Anon"
+      }
+    </script>
+    <ul id="messages"></ul>
+    <div id="type">
+      <form action="">
+        <input id="m" autocomplete="off" /><button>Send</button>
+      </form>
+    </div>
+    <script src="/socket.io/socket.io.js"></script>
+
+  <script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+  <script>
+    $(function () {
+      var socket = io();
+      $('form').submit(function(e){
+        e.preventDefault(); // prevents page reloading
+        socket.emit('chat message', [username, $('#m').val()]);
+        socket.emit('no type', username);
+        $('#m').val('');
+        return false;
+      });
+      socket.on('chat message', function(msg){
+        $('#messages').append($('<li>').text(`${msg[0]}: ${msg[1]}`));
+        });
+        $('#m').on('keyup', function() {
+          if (this.value.length >= 1) {
+            socket.emit('type', username);
+          }
+        });
+        socket.on('typing', (users) => {
+          $('#type').find('p:first').remove();
+          if(Object.keys(users).length){
+            $('#type').prepend(`<p>${Object.keys(users).length < 3 ? users.join(' and ') + ' is' : users.length + ' users are '} typing</p>`)
+          }
+        });
+      });
+  </script>
+  </body>
+</html>
